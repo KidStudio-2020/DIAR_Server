@@ -21,9 +21,9 @@ interface RegisterBody {
   password?: string;
 }
 
-const repository = getRepository(User);
-
 router.post('/login', doAsync(async function(req, res) {
+  const repository = getRepository(User);
+
   const { email, password } = <LoginBody>req.body;
   if(!email || !password) return res.status(400).json({ error: 'Missing fields.'})
 
@@ -38,6 +38,8 @@ router.post('/login', doAsync(async function(req, res) {
 }));
 
 router.post('/register', doAsync(async function(req, res) {
+  const repository = getRepository(User);
+
   const { name, email, password } = <RegisterBody>req.body;
   if(!name || !email || !password) return res.status(400).json({ error: 'Missing fields.'})
 
