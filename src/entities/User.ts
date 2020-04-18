@@ -27,10 +27,6 @@ export class User {
   @Column()
   imagePath!: string;
 
-  @ManyToMany(type => Capsule, capsule => capsule.user, { cascade: true })
-  @JoinTable()
-  capsules!: Capsule[];
-
   @ManyToMany(type => Mission, mission => mission.completedBy, { cascade: true })
   @JoinTable()
   missions!: Mission[];

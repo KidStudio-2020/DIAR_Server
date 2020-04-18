@@ -6,7 +6,7 @@ export class Capsule {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToMany(type => User, user => user.capsules, {cascade:true})
+  @ManyToMany(type => User)
   @JoinTable()
   user!: User[];
 

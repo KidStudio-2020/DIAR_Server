@@ -28,7 +28,7 @@ export class Mission {
   @Column()
   prize!: number;
 
-  @ManyToMany(type => User, user => user.missions, {cascade: true})
+  @ManyToMany(type => User, user => user.missions)
   @JoinTable()
   completedBy!: User[];
 }
