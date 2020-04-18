@@ -24,7 +24,7 @@ router.get("/", doAsync(async function(req: GeographicRequest, res, next) {
     .limit(3)
     .getMany()
   return res.send({ 
-    capsules: capsules.map(c => ({ id: c.id, title: c.title, description: c.description, imagePaths: c.imagePaths })) 
+    capsules: capsules.map(c => ({ lat: c.lat, lng: c.lng, id: c.id, title: c.title, description: c.description, imagePaths: c.imagePaths })) 
   })
 }));
 
