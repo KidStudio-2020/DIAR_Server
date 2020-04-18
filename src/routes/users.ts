@@ -50,17 +50,17 @@ router.post('/register', doAsync(async function(req, res) {
   const hashedPassword = await bcrypt.hash(password, 10)
   user.password = hashedPassword
 
-  const valid = await validate(user)
+  const valid = await validate(user, { validationError: { target: false } })
   if(valid.length > 0) return res.status(400).json({ error: 'Malformed fields.', validation: valid })
 
   try {
     await repository.save(user)
-    res.json({ success: true })
+    res.json({ done: true })
   } catch(e) {
     if(e instanceof QueryFailedError) {
       switch((<any>e).code) {
         case 'ER_DUP_ENTRY':
-          return res.status(400).json({ error: 'Duplicate entry.' })
+          return res.status(409).json({ error: 'Duplicate entry.' })
         default:
           throw e
       }
