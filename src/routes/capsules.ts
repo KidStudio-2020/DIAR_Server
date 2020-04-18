@@ -39,7 +39,7 @@ router.post('/', doAsync(async function(req: CapsuleCreationRequest, res, next) 
   const repository = getRepository(Capsule);
 
   if(!req.body || !req.body.lat || !req.body.lng || !req.body.title || !req.body.description || !req.body.placeName)
-    return res.status(400).json({ error: 'invalid' });
+    return res.status(400).json({ error: 'Missing fields.' });
 
   const user = await getRepository(User).findOne(req.user!.id);
   if(!user) throw Error('No user found, but authorized');
@@ -65,7 +65,7 @@ type CapsuleRemovalRequest = AuthorizedRequest<{
 }>;
 
 router.delete('/', doAsync(async function(req: CapsuleRemovalRequest, res, next) {
-  if(!req.body || !req.body.id) return res.status(400).json({ error: 'invalid' });
+  if(!req.body || !req.body.id) return res.status(400).json({ error: 'Missing fields.' });
   
   const repository = getRepository(Capsule);
   const capsule = await repository.findOne(req.body.id, { relations: ['user'] });
@@ -82,7 +82,7 @@ router.put('/', doAsync(async function(req: CapsuleModificationRequest, res, nex
   const repository = getRepository(Capsule);
 
   if(!req.body.id)
-    return res.status(400).json({ error: 'invalid' });
+    return res.status(400).json({ error: 'Missing fields.' });
 
   const user = await getRepository(User).findOne(req.user!.id, { relations: ['user'] });
   if(!user) throw Error('No user found, but authorized');
