@@ -24,6 +24,9 @@ export class User {
   @Column()
   password!: string;
 
+  @Column()
+  imagePath!: string;
+
   @ManyToMany(type => Capsule, capsule => capsule.user, { cascade: true })
   @JoinTable()
   capsules!: Capsule[];
