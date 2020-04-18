@@ -15,19 +15,22 @@ type GeographicRequest = AuthorizedRequest<{
 
 router.get("/", doAsync(async function(req: GeographicRequest, res, next) {
   const repository = getRepository(Capsule);
+  if(!req.body.lat || !req.body.lng) return res.send({ error: 'Missing fields.' })
   const capsules = await repository.createQueryBuilder('capsule')
     .select()
-    .where(`POW(111.321 * (lat - :lat), 2) + POW(111.321 * (:lng - lng) * COS(latitude / 57.3), 2) <= 1`) // within 1 km
+    .where(`POW(111.321 * (lat - :lat), 2) + POW(111.321 * (:lng - lng) * COS(lat / 57.3), 2) <= 1`) // within 1 km
     .setParameters({ lat: req.body.lat, lng: req.body.lng })
+    .innerJoinAndSelect('capsule.user', 'user', 'user.id = :id', {id: req.user!.id})
     .limit(3)
-    .printSql()
     .getMany()
-  return res.send({ capsules })
+  return res.send({ 
+    capsules: capsules.map(c => ({ id: c.id, title: c.title, description: c.description, imagePaths: c.imagePaths })) 
+  })
 }));
 
 type CapsuleCreationRequest = AuthorizedRequest<{
   title: string,
-  imagePaths: string[],
+  imagePaths?: string[],
   description: string,
   placeName: string
 }> & GeographicRequest;
@@ -35,10 +38,10 @@ type CapsuleCreationRequest = AuthorizedRequest<{
 router.post('/', doAsync(async function(req: CapsuleCreationRequest, res, next) {
   const repository = getRepository(Capsule);
 
-  if(!req.body || !req.body.lat || !req.body.lng || !req.body.title || !req.body.imagePaths || !req.body.description || !req.body.placeName)
+  if(!req.body || !req.body.lat || !req.body.lng || !req.body.title || !req.body.description || !req.body.placeName)
     return res.status(400).json({ error: 'invalid' });
 
-  const user = await getRepository(User).findOne(req.user!.id, { relations: ['user'] });
+  const user = await getRepository(User).findOne(req.user!.id);
   if(!user) throw Error('No user found, but authorized');
 
   const capsule = new Capsule();
@@ -48,10 +51,13 @@ router.post('/', doAsync(async function(req: CapsuleCreationRequest, res, next) 
   capsule.title = req.body.title;
   capsule.placeName = req.body.placeName;
   capsule.description = req.body.description;
-  capsule.imagePaths = req.body.imagePaths;
-  capsule.user.push(user);
+  if(req.body.imagePaths) capsule.imagePaths = req.body.imagePaths;
+  else capsule.imagePaths = [];
+  if(capsule.user) capsule.user.push(user);
+  else capsule.user = [user];
 
   repository.save(capsule);
+  return res.json({ done: true })
 }))
 
 type CapsuleRemovalRequest = AuthorizedRequest<{
