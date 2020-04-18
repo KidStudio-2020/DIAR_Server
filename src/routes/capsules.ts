@@ -25,14 +25,14 @@ router.get("/", doAsync(async function(req: GeographicRequest, res, next) {
   return res.send({ capsules })
 }));
 
-type CapsuleRequest = AuthorizedRequest<{
+type CapsuleCreationRequest = AuthorizedRequest<{
   title: string,
   imagePaths: string[],
   description: string,
   placeName: string
 }> & GeographicRequest;
 
-router.post('/', doAsync(async function(req: CapsuleRequest, res, next) {
+router.post('/', doAsync(async function(req: CapsuleCreationRequest, res, next) {
   const repository = getRepository(Capsule);
 
   if(!req.body || !req.body.lat || !req.body.lng || !req.body.title || !req.body.imagePaths || !req.body.description || !req.body.placeName)
@@ -50,6 +50,46 @@ router.post('/', doAsync(async function(req: CapsuleRequest, res, next) {
   capsule.description = req.body.description;
   capsule.imagePaths = req.body.imagePaths;
   capsule.user.push(user);
+
+  repository.save(capsule);
+}))
+
+type CapsuleRemovalRequest = AuthorizedRequest<{
+  id?: number;
+}>;
+
+router.delete('/', doAsync(async function(req: CapsuleRemovalRequest, res, next) {
+  if(!req.body || !req.body.id) return res.status(400).json({ error: 'invalid' });
+  
+  const repository = getRepository(Capsule);
+  const capsule = await repository.findOne(req.body.id);
+
+  if(!capsule) return res.status(404).json({ error: 'No entry found. '})
+
+  repository.remove(capsule);
+}))
+
+type CapsuleModificationRequest = CapsuleRemovalRequest & CapsuleCreationRequest;
+
+router.put('/', doAsync(async function(req: CapsuleModificationRequest, res, next) {
+  const repository = getRepository(Capsule);
+
+  if(!req.body.id)
+    return res.status(400).json({ error: 'invalid' });
+
+  const user = await getRepository(User).findOne(req.user!.id, { relations: ['user'] });
+  if(!user) throw Error('No user found, but authorized');
+  
+  const capsule = await repository.findOne(req.body.id);
+  if(!capsule) return res.status(404).json({ error: 'No entry found. '})
+  
+  if(req.body.lat) capsule.lat = req.body.lat;
+  if(req.body.lng) capsule.lng = req.body.lng;
+  if(req.body.title) capsule.title = req.body.title;
+  if(req.body.placeName) capsule.placeName = req.body.placeName;
+  if(req.body.description) capsule.description = req.body.description;
+  if(req.body.imagePaths) capsule.imagePaths = req.body.imagePaths;
+  if(req.user) capsule.user.push(user);
 
   repository.save(capsule);
 }))
