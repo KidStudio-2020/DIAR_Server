@@ -74,6 +74,7 @@ router.delete('/', doAsync(async function(req: CapsuleRemovalRequest, res, next)
   if(capsule.user.every(u => u.id !== req.user!.id)) res.status(403).json({ error: 'Attempted to remove other\'s capsule.'})
 
   repository.remove(capsule);
+  return res.json({ done: true })
 }))
 
 type CapsuleModificationRequest = CapsuleRemovalRequest & CapsuleCreationRequest;
@@ -99,6 +100,7 @@ router.put('/', doAsync(async function(req: CapsuleModificationRequest, res, nex
   if(req.user) capsule.user.push(user);
 
   repository.save(capsule);
+  return res.json({ done: true })
 }))
 
 export default router;
