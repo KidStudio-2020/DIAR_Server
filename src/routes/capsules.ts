@@ -68,9 +68,10 @@ router.delete('/', doAsync(async function(req: CapsuleRemovalRequest, res, next)
   if(!req.body || !req.body.id) return res.status(400).json({ error: 'invalid' });
   
   const repository = getRepository(Capsule);
-  const capsule = await repository.findOne(req.body.id);
+  const capsule = await repository.findOne(req.body.id, { relations: ['user'] });
 
   if(!capsule) return res.status(404).json({ error: 'No entry found. '})
+  if(capsule.user.every(u => u.id !== req.user!.id)) res.status(403).json({ error: 'Attempted to remove other\'s capsule.'})
 
   repository.remove(capsule);
 }))
