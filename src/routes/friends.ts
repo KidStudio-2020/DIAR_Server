@@ -9,12 +9,9 @@ const router = express.Router();
 
 const repository = getRepository(User);
 
-interface FreindRequest extends express.Request {
-  body: {
-    id?: User['id'] | undefined
-  },
-  user?: AuthorizedRequest['user']
-}
+type FriendRequest = AuthorizedRequest<{
+  id?: User['id'] | undefined
+}>
 
 router.get("/", doAsync(async function(req: AuthorizedRequest, res, next) {
   const user = await repository.findOne(req.user!.id);
@@ -22,7 +19,7 @@ router.get("/", doAsync(async function(req: AuthorizedRequest, res, next) {
   return res.send({ friends: user.friends })
 }));
 
-router.post("/", doAsync(async function(req: FreindRequest, res, next) {
+router.post("/", doAsync(async function(req: FriendRequest, res, next) {
   if(!req.body.id) return res.status(400).send({ error: 'missing id' });
   const user = await repository.findOne(req.user!.id);
   const friend = await repository.findOne(req.body.id);
@@ -32,7 +29,7 @@ router.post("/", doAsync(async function(req: FreindRequest, res, next) {
   return res.send({ done: true });
 }));
 
-router.delete("/", doAsync(async function(req: FreindRequest, res, next) {
+router.delete("/", doAsync(async function(req: FriendRequest, res, next) {
   if(!req.body.id) return res.status(400).send({ error: 'missing id' });
   const user = await repository.findOne(req.user!.id);
   if(!user) return res.status(404).send({ error: 'No user found.' })
