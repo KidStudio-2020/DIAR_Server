@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
 import { User } from "./User";
 
 export enum MissionType {
@@ -28,6 +28,7 @@ export class Mission {
   @Column()
   prize!: number;
 
-  @ManyToMany(type => User, user => user.missions)
+  @ManyToMany(type => User, user => user.missions, {cascade: true})
+  @JoinTable()
   completedBy!: User[];
 }

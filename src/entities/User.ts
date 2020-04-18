@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToMany, JoinTable } from "typeorm";
 import { IsEmail, IsNotEmpty } from "class-validator";
 import { Capsule } from "./Capsule";
 import { Mission } from "./Mission";
@@ -25,12 +25,15 @@ export class User {
   password!: string;
 
   @ManyToMany(type => Capsule, capsule => capsule.user, { cascade: true })
+  @JoinTable()
   capsules!: Capsule[];
 
   @ManyToMany(type => Mission, mission => mission.completedBy, { cascade: true })
+  @JoinTable()
   missions!: Mission[];
 
-  @ManyToMany(type => User, user => user.friends, { cascade: true })
+  @ManyToMany(type => User, user => user.friends)
+  @JoinTable()
   friends!: User[];
 
   @Column({

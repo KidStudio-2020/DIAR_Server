@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from "typeorm";
 import { User } from "./User";
 
 @Entity()
@@ -6,7 +6,8 @@ export class Capsule {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @ManyToMany(type => User, user => user.capsules)
+  @ManyToMany(type => User, user => user.capsules, {cascade:true})
+  @JoinTable()
   user!: User[];
 
   @Column()
